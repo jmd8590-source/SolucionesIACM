@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import {
   MessageSquare,
   X,
@@ -19,6 +20,11 @@ interface Message {
 }
 
 export default function ChatWidget() {
+  const pathname = usePathname();
+
+  // Hide on admin routes
+  if (pathname?.startsWith("/admin")) return null;
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {

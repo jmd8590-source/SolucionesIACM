@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   Menu,
   X,
@@ -69,6 +70,7 @@ const navItems = [
 ];
 
 export default function Header() {
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -89,6 +91,9 @@ export default function Header() {
       document.body.style.overflow = "";
     };
   }, [isMobileOpen]);
+
+  // Hide on admin routes
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <header

@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   Globe,
   Brain,
@@ -33,6 +36,10 @@ const footerLinks = {
 };
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  // Hide on admin routes
+  if (pathname?.startsWith("/admin")) return null;
   return (
     <footer className="relative bg-gray-950 text-white overflow-hidden" role="contentinfo">
       {/* Gradient accent line */}
