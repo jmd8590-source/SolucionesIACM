@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Globe,
@@ -23,6 +26,7 @@ import {
 } from "lucide-react";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import Counter from "@/components/ui/Counter";
+import { getActiveLanguage, translations } from "@/lib/i18n";
 
 const services = [
   {
@@ -121,6 +125,17 @@ const testimonials = [
 ];
 
 export default function HomePage() {
+  const [lang, setLang] = useState<"es" | "en">("es");
+
+  useEffect(() => {
+    setLang(getActiveLanguage());
+    const handleLangChange = () => setLang(getActiveLanguage());
+    window.addEventListener("languagechange", handleLangChange);
+    return () => window.removeEventListener("languagechange", handleLangChange);
+  }, []);
+
+  const heroTrans = translations[lang].hero;
+
   return (
     <>
       {/* ===== HERO ===== */}
@@ -148,17 +163,20 @@ export default function HomePage() {
             <AnimatedSection delay={0}>
               <div className="badge mb-6">
                 <Sparkles size={14} />
-                Soluciones digitales para pymes
+                {heroTrans.badge}
               </div>
             </AnimatedSection>
 
             {/* Headline */}
             <AnimatedSection delay={100}>
               <h1 className="mb-6">
-                Para hacer crecer{" "}
+                {lang === "es" ? "Para hacer crecer" : "To grow"}
                 <br className="hidden sm:block" />
-                tu negocio, ponte{" "}
-                <span className="gradient-text-hero">al dIA</span>
+                {lang === "es" ? "tu negocio, ponte" : "your business, get"}
+                {" "}
+                <span className="gradient-text-hero">
+                  {lang === "es" ? "al dIA" : "up to dAte"}
+                </span>
                 <span className="text-blue-500">.</span>
               </h1>
             </AnimatedSection>
@@ -166,11 +184,7 @@ export default function HomePage() {
             {/* Subheadline */}
             <AnimatedSection delay={200}>
               <p className="text-lg sm:text-xl text-gray-500 mb-10 max-w-2xl leading-relaxed">
-                Digitalizamos tu empresa con{" "}
-                <strong className="text-gray-700">desarrollo web profesional</strong>,{" "}
-                <strong className="text-gray-700">inteligencia artificial</strong> y{" "}
-                <strong className="text-gray-700">automatización</strong>. Desde Cumbres
-                Mayores para toda España.
+                {heroTrans.subtitle}
               </p>
             </AnimatedSection>
 
@@ -179,10 +193,10 @@ export default function HomePage() {
               <div className="flex flex-wrap gap-4">
                 <Link href="/agenda-reunion" className="btn btn-primary btn-lg" id="hero-cta-primary">
                   <CalendarDays size={20} />
-                  Agenda tu consulta gratuita
+                  {heroTrans.ctaPrimary}
                 </Link>
                 <Link href="/servicios" className="btn btn-secondary btn-lg" id="hero-cta-secondary">
-                  Ver servicios
+                  {heroTrans.ctaSecondary}
                   <ArrowRight size={18} />
                 </Link>
               </div>
@@ -193,15 +207,15 @@ export default function HomePage() {
               <div className="flex flex-wrap items-center gap-6 mt-12 pt-8 border-t border-gray-200/60">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 size={18} className="text-emerald-500" />
-                  <span className="text-sm text-gray-500">Sin compromiso</span>
+                  <span className="text-sm text-gray-500">{lang === "es" ? "Sin compromiso" : "No obligation"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Shield size={18} className="text-blue-500" />
-                  <span className="text-sm text-gray-500">100% personalizado</span>
+                  <span className="text-sm text-gray-500">{lang === "es" ? "100% personalizado" : "100% customized"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={18} className="text-purple-500" />
-                  <span className="text-sm text-gray-500">Respuesta en 24h</span>
+                  <span className="text-sm text-gray-500">{lang === "es" ? "Respuesta en 24h" : "Response in 24h"}</span>
                 </div>
               </div>
             </AnimatedSection>

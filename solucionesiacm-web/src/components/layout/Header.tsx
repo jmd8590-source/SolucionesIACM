@@ -16,64 +16,26 @@ import {
   Mail,
   CalendarDays,
 } from "lucide-react";
-
-const navItems = [
-  {
-    label: "Servicios",
-    href: "/servicios",
-    children: [
-      {
-        label: "Desarrollo Web",
-        href: "/desarrollo-web",
-        icon: Globe,
-        description: "Webs corporativas, landing pages y ecommerce",
-      },
-      {
-        label: "Soluciones IA",
-        href: "/soluciones-ia",
-        icon: Brain,
-        description: "Chatbots, agentes y asistentes inteligentes",
-      },
-      {
-        label: "Automatización",
-        href: "/automatizacion",
-        icon: Zap,
-        description: "Flujos automatizados con n8n",
-      },
-      {
-        label: "Auditor Web IA",
-        href: "/auditor-web-ia",
-        icon: Search,
-        description: "Análisis inteligente de tu web",
-      },
-    ],
-  },
-  {
-    label: "Recursos",
-    href: "/recursos",
-    children: [
-      {
-        label: "Blog",
-        href: "/blog",
-        icon: BookOpen,
-        description: "Artículos sobre IA, web y negocio",
-      },
-      {
-        label: "Recursos",
-        href: "/recursos",
-        icon: BookOpen,
-        description: "Guías, herramientas y descargas",
-      },
-    ],
-  },
-  { label: "Contacto", href: "/contacto", icon: Mail },
-];
+import { getActiveLanguage, setActiveLanguage, translations } from "@/lib/i18n";
 
 export default function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [lang, setLang] = useState<"es" | "en">("es");
+
+  useEffect(() => {
+    setLang(getActiveLanguage());
+    const handleLangChange = () => setLang(getActiveLanguage());
+    window.addEventListener("languagechange", handleLangChange);
+    return () => window.removeEventListener("languagechange", handleLangChange);
+  }, []);
+
+  const toggleLanguage = () => {
+    const nextLang = lang === "es" ? "en" : "es";
+    setActiveLanguage(nextLang);
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -94,6 +56,59 @@ export default function Header() {
 
   // Hide on admin routes
   if (pathname?.startsWith("/admin")) return null;
+
+  const t = translations[lang].nav;
+  const navItems = [
+    {
+      label: t.services,
+      href: "/servicios",
+      children: [
+        {
+          label: t.webDev,
+          href: "/desarrollo-web",
+          icon: Globe,
+          description: lang === "es" ? "Webs corporativas, landing pages y ecommerce" : "Corporate websites, landing pages and ecommerce",
+        },
+        {
+          label: t.aiSolutions,
+          href: "/soluciones-ia",
+          icon: Brain,
+          description: lang === "es" ? "Chatbots, agentes y asistentes inteligentes" : "Chatbots, agents and virtual assistants",
+        },
+        {
+          label: t.automation,
+          href: "/automatizacion",
+          icon: Zap,
+          description: lang === "es" ? "Flujos automatizados con n8n" : "Automated workflows with n8n",
+        },
+        {
+          label: t.auditor,
+          href: "/auditor-web-ia",
+          icon: Search,
+          description: lang === "es" ? "Análisis inteligente de tu web" : "Intelligent analysis of your website",
+        },
+      ],
+    },
+    {
+      label: t.resources,
+      href: "/recursos",
+      children: [
+        {
+          label: t.blog,
+          href: "/blog",
+          icon: BookOpen,
+          description: lang === "es" ? "Artículos sobre IA, web y negocio" : "Articles on AI, web and business",
+        },
+        {
+          label: lang === "es" ? "Recursos" : "Resources",
+          href: "/recursos",
+          icon: BookOpen,
+          description: lang === "es" ? "Guías, herramientas y descargas" : "Guides, tools and downloads",
+        },
+      ],
+    },
+    { label: t.contact, href: "/contacto", icon: Mail },
+  ];
 
   return (
     <header
@@ -196,13 +211,23 @@ export default function Header() {
 
         {/* CTA + Mobile Toggle */}
         <div className="flex items-center gap-3">
+          {/* Language Switcher */}
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 border border-gray-200 hover:border-gray-300 text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 rounded-xl transition-all shadow-xs cursor-pointer"
+            aria-label="Cambiar idioma / Change language"
+          >
+            <Globe size={13} className="text-slate-400" />
+            <span className="uppercase">{lang}</span>
+          </button>
+
           <Link
             href="/agenda-reunion"
             className="hidden sm:inline-flex btn btn-primary btn-sm"
             id="header-cta"
           >
             <CalendarDays size={16} />
-            Agenda una reunión
+            {lang === "es" ? "Agenda una reunión" : "Book a meeting"}
           </Link>
 
           <button
@@ -278,17 +303,26 @@ export default function Header() {
             </nav>
 
             {/* Mobile CTA */}
-            <div className="mt-8 pt-6 border-t border-gray-100">
+            <div className="mt-8 pt-6 border-t border-gray-100 space-y-3">
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center justify-center gap-1.5 w-full py-2.5 border border-gray-200 hover:border-gray-300 text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 rounded-xl transition-all shadow-xs cursor-pointer"
+                aria-label="Cambiar idioma / Change language"
+              >
+                <Globe size={13} className="text-slate-400" />
+                <span>{lang === "es" ? "Cambiar idioma (EN)" : "Change language (ES)"}</span>
+              </button>
+
               <Link
                 href="/agenda-reunion"
                 className="btn btn-primary w-full justify-center"
                 onClick={() => setIsMobileOpen(false)}
               >
                 <CalendarDays size={18} />
-                Agenda una reunión
+                {lang === "es" ? "Agenda una reunión" : "Book a meeting"}
               </Link>
               <p className="text-center text-xs text-gray-400 mt-4">
-                Para hacer crecer tu negocio, ponte al dIA.
+                {lang === "es" ? "Para hacer crecer tu negocio, ponte al dIA." : "To grow your business, get up to dAte."}
               </p>
             </div>
           </div>
