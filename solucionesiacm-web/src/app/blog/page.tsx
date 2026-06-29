@@ -150,9 +150,9 @@ export default function BlogPage() {
                       <span>{featured.date}</span>
                     </div>
                     <p className="text-gray-500 leading-relaxed mb-6">{featured.excerpt}</p>
-                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:gap-2 transition-all cursor-pointer">
+                    <Link href={`/blog/${featured.slug}`} className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:gap-2 transition-all cursor-pointer">
                       Leer artículo <ArrowRight size={14} />
-                    </span>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -167,31 +167,38 @@ export default function BlogPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {rest.map((post, i) => (
               <AnimatedSection key={post.slug} delay={i * 100}>
-                <article className="card p-0 overflow-hidden h-full group">
-                  <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <BookOpen size={40} className="text-gray-300" />
-                  </div>
-                  <div className="p-6 relative z-10">
-                    <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
-                      <span className="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full font-semibold">
-                        {post.category}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock size={12} />
-                        {post.readTime}
-                      </span>
+                <article className="card p-0 overflow-hidden h-full group flex flex-col justify-between">
+                  <div>
+                    <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <BookOpen size={40} className="text-gray-300" />
                     </div>
-                    <h3 className="text-lg font-bold mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">
-                      {post.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 leading-relaxed mb-4">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center justify-between">
+                    <div className="p-6 pb-0 relative z-10">
+                      <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
+                        <span className="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full font-semibold">
+                          {post.category}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock size={12} />
+                          {post.readTime}
+                        </span>
+                      </div>
+                      <Link href={`/blog/${post.slug}`}>
+                        <h3 className="text-lg font-bold mb-2 text-gray-900 group-hover:text-blue-600 transition-colors cursor-pointer">
+                          {post.title}
+                        </h3>
+                      </Link>
+                      <p className="text-sm text-gray-500 leading-relaxed mb-4">
+                        {post.excerpt}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6 pt-0 relative z-10">
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                       <span className="text-xs text-gray-400">{post.date}</span>
-                      <span className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 group-hover:gap-2 transition-all">
+                      <Link href={`/blog/${post.slug}`} className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 group-hover:gap-2 transition-all">
                         Leer <ArrowRight size={14} />
-                      </span>
+                      </Link>
                     </div>
                   </div>
                 </article>

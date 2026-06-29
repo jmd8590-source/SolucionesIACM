@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { saveLead } from "@/lib/db";
 import {
   Mail,
   Phone,
@@ -17,13 +18,35 @@ export default function ContactoPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    const company = formData.get("company") as string;
+    const service = formData.get("service") as string;
+    const message = formData.get("message") as string;
+
+    // Save to client-side CRM database
+    saveLead({
+      name,
+      company: company || "Pyme / Autónomo",
+      email,
+      phone: phone || "",
+      status: "Nuevo",
+      source: "Web Form",
+      value: service ? 1500 : 1000, // Default estimated values
+      stage: "Nuevo Lead",
+      notes: `Consulta sobre: ${service || "General"}. Mensaje: ${message}`
+    });
+
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 2000);
+    }, 1500);
   };
 
   return (
@@ -88,6 +111,7 @@ export default function ContactoPage() {
                         <input
                           type="text"
                           id="contact-name"
+                          name="name"
                           required
                           className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
                           placeholder="Tu nombre"
@@ -100,6 +124,7 @@ export default function ContactoPage() {
                         <input
                           type="email"
                           id="contact-email"
+                          name="email"
                           required
                           className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
                           placeholder="tu@email.com"
@@ -114,6 +139,7 @@ export default function ContactoPage() {
                         <input
                           type="tel"
                           id="contact-phone"
+                          name="phone"
                           className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
                           placeholder="+34 600 000 000"
                         />
@@ -125,6 +151,7 @@ export default function ContactoPage() {
                         <input
                           type="text"
                           id="contact-company"
+                          name="company"
                           className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
                           placeholder="Nombre de tu empresa"
                         />
@@ -136,6 +163,7 @@ export default function ContactoPage() {
                       </label>
                       <select
                         id="contact-service"
+                        name="service"
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
                       >
                         <option value="">Selecciona un servicio</option>
@@ -154,6 +182,7 @@ export default function ContactoPage() {
                       </label>
                       <textarea
                         id="contact-message"
+                        name="message"
                         required
                         rows={5}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-none"

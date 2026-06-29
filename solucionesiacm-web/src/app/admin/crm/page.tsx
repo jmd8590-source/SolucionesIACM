@@ -155,10 +155,20 @@ const initialMeetings = [
   }
 ];
 
+import { useEffect } from "react";
+import {
+  getLeads,
+  getMeetings,
+  updateLeadsList,
+  updateMeetingsList,
+  Lead,
+  Meeting,
+} from "@/lib/db";
+
 export default function CRMAdminPage() {
   const [activeTab, setActiveTab] = useState<"dashboard" | "clientes" | "kanban" | "reuniones" | "conversaciones">("dashboard");
-  const [clients, setClients] = useState(initialClients);
-  const [meetings, setMeetings] = useState(initialMeetings);
+  const [clients, setClients] = useState<Lead[]>([]);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -178,19 +188,40 @@ export default function CRMAdminPage() {
   const [newClientStage, setNewClientStage] = useState("Nuevo Lead");
 
   // Selected client for conversation history
-  const [selectedClientConv, setSelectedClientConv] = useState(clients[0]);
+  const [selectedClientConv, setSelectedClientConv] = useState<any>(null);
+
+  // Load from database on mount
+  useEffect(() => {
+    const leads = getLeads();
+    setClients(leads);
+    setMeetings(getMeetings());
+    if (leads.length > 0) {
+      setSelectedClientConv(leads[0]);
+    }
+  }, []);
+
+  // Sync to localStorage on state change
+  const saveClientsState = (updated: Lead[]) => {
+    setClients(updated);
+    updateLeadsList(updated);
+  };
+
+  const saveMeetingsState = (updated: Meeting[]) => {
+    setMeetings(updated);
+    updateMeetingsList(updated);
+  };
 
   // Handle client creations
   const handleAddClient = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClientName) return;
 
-    const created: any = {
+    const created: Lead = {
       id: String(clients.length + 1),
       name: newClientName,
-      company: newClientCompany,
+      company: newClientCompany || "Pyme / Autónomo",
       email: newClientEmail,
-      phone: newClientPhone,
+      phone: newClientPhone || "",
       status: newClientStatus,
       source: "Manual",
       value: Number(newClientValue) || 0,
@@ -199,7 +230,7 @@ export default function CRMAdminPage() {
       messages: []
     };
 
-    setClients([created, ...clients]);
+    saveClientsState([created, ...clients]);
     setShowAddModal(false);
     resetForm();
   };
@@ -209,20 +240,20 @@ export default function CRMAdminPage() {
     e.preventDefault();
     if (!editingClient) return;
 
-    setClients(
-      clients.map((c) =>
-        c.id === editingClient.id ? { ...editingClient, value: Number(editingClient.value) || 0 } : c
-      )
+    const updated = clients.map((c) =>
+      c.id === editingClient.id ? { ...editingClient, value: Number(editingClient.value) || 0 } : c
     );
+    saveClientsState(updated);
     setEditingClient(null);
   };
 
   // Handle lead deletion
   const handleDeleteClient = (id: string) => {
     if (confirm("¿Estás seguro de eliminar este lead?")) {
-      setClients(clients.filter((c) => c.id !== id));
-      if (selectedClientConv.id === id) {
-        setSelectedClientConv(clients[0]);
+      const updated = clients.filter((c) => c.id !== id);
+      saveClientsState(updated);
+      if (selectedClientConv?.id === id) {
+        setSelectedClientConv(updated[0] || null);
       }
     }
   };
@@ -241,27 +272,26 @@ export default function CRMAdminPage() {
   // Update Kanban Pipeline stages
   const updatePipelineStage = (clientId: string, direction: "left" | "right") => {
     const stages = ["Nuevo Lead", "Contactado", "Propuesta Enviada", "Negociación", "Cierre Ganado"];
-    setClients(
-      clients.map((c) => {
-        if (c.id !== clientId) return c;
-        const currentIndex = stages.indexOf(c.stage);
-        let nextIndex = currentIndex;
-        if (direction === "right" && currentIndex < stages.length - 1) {
-          nextIndex += 1;
-        } else if (direction === "left" && currentIndex > 0) {
-          nextIndex -= 1;
-        }
-        const newStage = stages[nextIndex];
-        // Sincronizar status semántico
-        let newStatus = c.status;
-        if (newStage === "Cierre Ganado") newStatus = "Ganado";
-        else if (newStage === "Nuevo Lead") newStatus = "Nuevo";
-        else if (newStage === "Propuesta Enviada" || newStage === "Negociación") newStatus = "Propuesta";
-        else if (newStage === "Contactado") newStatus = "Contactado";
+    const updated = clients.map((c) => {
+      if (c.id !== clientId) return c;
+      const currentIndex = stages.indexOf(c.stage);
+      let nextIndex = currentIndex;
+      if (direction === "right" && currentIndex < stages.length - 1) {
+        nextIndex += 1;
+      } else if (direction === "left" && currentIndex > 0) {
+        nextIndex -= 1;
+      }
+      const newStage = stages[nextIndex];
+      // Sincronizar status semántico
+      let newStatus = c.status;
+      if (newStage === "Cierre Ganado") newStatus = "Ganado";
+      else if (newStage === "Nuevo Lead") newStatus = "Nuevo";
+      else if (newStage === "Propuesta Enviada" || newStage === "Negociación") newStatus = "Propuesta";
+      else if (newStage === "Contactado") newStatus = "Contactado";
 
-        return { ...c, stage: newStage, status: newStatus };
-      })
-    );
+      return { ...c, stage: newStage, status: newStatus };
+    });
+    saveClientsState(updated);
   };
 
   // Filter clients
@@ -797,7 +827,7 @@ export default function CRMAdminPage() {
                 {/* Transcripts bubbles */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/20">
                   {selectedClientConv.messages.length > 0 ? (
-                    selectedClientConv.messages.map((msg, i) => {
+                    selectedClientConv.messages.map((msg: any, i: number) => {
                       const isAssistant = msg.role === "assistant";
                       return (
                         <div key={i} className={`flex gap-3 items-start ${isAssistant ? "" : "flex-row-reverse"}`}>

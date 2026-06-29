@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { saveLead, saveMeeting } from "@/lib/db";
 import {
   CalendarDays,
   Clock,
@@ -51,13 +52,46 @@ export default function AgendaReunionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    const company = formData.get("company") as string;
+    const notes = formData.get("notes") as string;
+
+    const companyVal = company || "Pyme / Autónomo";
+    const meetingTypeLabel = meetingTypes[selectedType].title;
+
+    // Save lead details
+    saveLead({
+      name,
+      company: companyVal,
+      email,
+      phone: phone || "",
+      status: "Contactado",
+      source: "Web Form",
+      value: 2000, // Estimated value
+      stage: "Contactado",
+      notes: `Reunión solicitada: ${meetingTypeLabel} el ${selectedDate} a las ${selectedTime}. Notas: ${notes || "Ninguna"}`
+    });
+
+    // Save meeting details
+    saveMeeting({
+      clientName: name,
+      title: `Reunión de asesoramiento: ${companyVal}`,
+      date: selectedDate,
+      time: selectedTime,
+      type: meetingTypeLabel
+    });
+
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 2000);
+    }, 1500);
   };
 
   // Generate next 14 days
@@ -228,26 +262,26 @@ export default function AgendaReunionPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="meeting-name" className="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
-                    <input type="text" id="meeting-name" required placeholder="Tu nombre" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
+                    <input type="text" id="meeting-name" name="name" required placeholder="Tu nombre" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
                   </div>
                   <div>
                     <label htmlFor="meeting-email" className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
-                    <input type="email" id="meeting-email" required placeholder="tu@email.com" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
+                    <input type="email" id="meeting-email" name="email" required placeholder="tu@email.com" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="meeting-phone" className="block text-sm font-semibold text-gray-700 mb-2">Teléfono</label>
-                    <input type="tel" id="meeting-phone" placeholder="+34 600 000 000" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
+                    <input type="tel" id="meeting-phone" name="phone" placeholder="+34 600 000 000" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
                   </div>
                   <div>
                     <label htmlFor="meeting-company" className="block text-sm font-semibold text-gray-700 mb-2">Empresa</label>
-                    <input type="text" id="meeting-company" placeholder="Nombre de tu empresa" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
+                    <input type="text" id="meeting-company" name="company" placeholder="Nombre de tu empresa" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
                   </div>
                 </div>
                 <div>
                   <label htmlFor="meeting-notes" className="block text-sm font-semibold text-gray-700 mb-2">¿Sobre qué quieres hablar?</label>
-                  <textarea id="meeting-notes" rows={3} placeholder="Cuéntanos brevemente tu proyecto o necesidad..." className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-none" />
+                  <textarea id="meeting-notes" name="notes" rows={3} placeholder="Cuéntanos brevemente tu proyecto o necesidad..." className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-none" />
                 </div>
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="meeting-privacy" required className="mt-1 accent-blue-600" />
